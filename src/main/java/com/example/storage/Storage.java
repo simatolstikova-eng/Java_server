@@ -30,14 +30,13 @@ public abstract class Storage<T> {
             } catch (IOException e) {
                 System.out.println("ERROR: " + e.getMessage());
                 System.out.println("Deleting corrupted file: " + filePath);
-                file.delete();  // Удаляем испорченный файл
+                file.delete();  
             }
         }
     }
 
     private void saveToFile() {
         try {
-            // Создаём папку data, если её нет
             File dir = new File("data");
             if (!dir.exists()) {
                 dir.mkdirs();
