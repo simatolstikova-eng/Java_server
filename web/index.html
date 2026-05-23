@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .cards {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            flex: 1;
+            min-width: 300px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        .delete-btn {
+            background: #e53e3e;
+        }
+        .delete-btn:hover {
+            background: #c53030;
+        }
+        .edit-btn {
+            background: #48bb78;
+        }
+        .edit-btn:hover {
+            background: #38a169;
+        }
+        .small-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin: 0 5px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            color: white;
+        }
+        .list {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .list-item {
+            background: #f7f7f7;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .list-item span {
+            flex: 1;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+            display: block;
+        }
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+            display: block;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+        .modal-content input, .modal-content textarea, .modal-content select {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📦 Admin Panel</h1>
+        <div class="cards">
+            <div class="card">
+                <h2>👤 Users</h2>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="userUsername" placeholder="username">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="userEmail" placeholder="email@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="userRole">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button onclick="createUser()">➕ Create User</button>
+                <button onclick="loadUsers()">🔄 Refresh</button>
+                <div class="list">
+                    <h3>User List:</h3>
+                    <div id="userList"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🛒 Products</h2>
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="productName" placeholder="Product name">
+                </div>
+                <div class="form-group">
+                    <label>Price</label>
+                    <input type="number" step="0.01" id="productPrice" placeholder="99.99">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="productDesc" rows="2" placeholder="Description"></textarea>
+                </div>
+                <button onclick="createProduct()">➕ Create Product</button>
+                <button onclick="loadProducts()">🔄 Refresh</button>
+                <div class="list">
+                    <h3>Product List:</h3>
+                    <div id="productList"></div>
+                </div>
+            </div>
+        </div>
+        <div id="status" class="status"></div>
+    </div>
+
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <h3>✏️ Edit User</h3>
+            <input type="hidden" id="editUserId">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="editUserUsername" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="editUserEmail" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <select id="editUserRole" class="form-control">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <button onclick="updateUser()">💾 Save</button>
+            <button onclick="closeEditUserModal()">❌ Cancel</button>
+        </div>
+    </div>
+
+    <div id="editProductModal" class="modal">
+        <div class="modal-content">
+            <h3>✏️ Edit Product</h3>
+            <input type="hidden" id="editProductId">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="editProductName" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Price</label>
+                <input type="number" step="0.01" id="editProductPrice" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="editProductDesc" rows="2" class="form-control"></textarea>
+            </div>
+            <button onclick="updateProduct()">💾 Save</button>
+            <button onclick="closeEditProductModal()">❌ Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        const auth = btoa("admin:admin123");
+
+        function showStatus(message, isError = false) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = isError ? 'status error' : 'status success';
+            setTimeout(() => {
+                statusDiv.className = 'status';
+            }, 3000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users', {
+                    headers: { 'Authorization': `Basic ${auth}` }
+                });
+                if (response.ok) {
+                    const users = await response.json();
+                    const userList = document.getElementById('userList');
+                    userList.innerHTML = '';
+                    users.forEach(user => {
+                        const div = document.createElement('div');
+                        div.className = 'list-item';
+                        div.innerHTML = `
+                            <span><strong>${escapeHtml(user.username)}</strong> (${user.role})<br><small>${escapeHtml(user.email)}</small></span>
+                            <div>
+                                <button class="small-btn edit-btn" onclick="editUser('${user.id}', '${escapeHtml(user.username)}', '${escapeHtml(user.email)}', '${user.role}')">✏️ Edit</button>
+                                <button class="small-btn delete-btn" onclick="deleteUser('${user.id}')">🗑️ Delete</button>
+                            </div>
+                        `;
+                        userList.appendChild(div);
+                    });
+                    showStatus(`Loaded ${users.length} users`);
+                }
+            } catch (error) {
+                showStatus('Error loading users: ' + error.message, true);
+            }
+        }
+
+        async function createUser() {
+            const username = document.getElementById('userUsername').value;
+            const email = document.getElementById('userEmail').value;
+            const role = document.getElementById('userRole').value;
+
+            if (!username || !email) {
+                showStatus('Please fill in username and email', true);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Basic ${auth}`
+                    },
+                    body: JSON.stringify({ username, email, role })
+                });
+                if (response.ok) {
+                    showStatus('User created successfully');
+                    document.getElementById('userUsername').value = '';
+                    document.getElementById('userEmail').value = '';
+                    loadUsers();
+                } else {
+                    showStatus('Error creating user', true);
+                }
+            } catch (error) {
+                showStatus('Error: ' + error.message, true);
+            }
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('Delete this user?')) return;
+            try {
+                const response = await fetch(`/api/users/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Basic ${auth}` }
+                });
+                if (response.ok) {
+                    showStatus('User deleted');
+                    loadUsers();
+                } else {
+                    showStatus('Error deleting user', true);
+                }
+            } catch (error) {
+                showStatus('Error: ' + error.message, true);
+            }
+        }
+
+        function editUser(id, username, email, role) {
+            document.getElementById('editUserId').value = id;
+            document.getElementById('editUserUsername').value = username;
+            document.getElementById('editUserEmail').value = email;
+            document.getElementById('editUserRole').value = role;
+            document.getElementById('editUserModal').style.display = 'flex';
+        }
+
+        async function updateUser() {
+            const id = document.getElementById('editUserId').value;
+            const username = document.getElementById('editUserUsername').value;
+            const email = document.getElementById('editUserEmail').value;
+            const role = document.getElementById('editUserRole').value;
+
+            try {
+                const response = await fetch(`/api/users/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Basic ${auth}`
+                    },
+                    body: JSON.stringify({ username, email, role })
+                });
+                if (response.ok) {
+                    showStatus('User updated successfully');
+                    closeEditUserModal();
+                    loadUsers();
+                } else {
+                    showStatus('Error updating user', true);
+                }
+            } catch (error) {
+                showStatus('Error: ' + error.message, true);
+            }
+        }
+
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').style.display = 'none';
+        }
+
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products', {
+                    headers: { 'Authorization': `Basic ${auth}` }
+                });
+                if (response.ok) {
+                    const products = await response.json();
+                    const productList = document.getElementById('productList');
+                    productList.innerHTML = '';
+                    products.forEach(product => {
+                        const div = document.createElement('div');
+                        div.className = 'list-item';
+                        div.innerHTML = `
+                            <span><strong>${escapeHtml(product.name)}</strong> - $${product.price}<br><small>${escapeHtml(product.description || '')}</small></span>
+                            <div>
+                                <button class="small-btn edit-btn" onclick="editProduct('${product.id}', '${escapeHtml(product.name)}', '${product.price}', '${escapeHtml(product.description || '')}')">✏️ Edit</button>
+                                <button class="small-btn delete-btn" onclick="deleteProduct('${product.id}')">🗑️ Delete</button>
+                            </div>
+                        `;
+                        productList.appendChild(div);
+                    });
+                    showStatus(`Loaded ${products.length} products`);
+                }
+            } catch (error) {
+                showStatus('Error loading products: ' + error.message, true);
+            }
+        }
+
+        async function createProduct() {
+            const name = document.getElementById('productName').value;
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const description = document.getElementById('productDesc').value;
+
+            if (!name || isNaN(price)) {
+                showStatus('Please fill in name and price', true);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Basic ${auth}`
+                    },
+                    body: JSON.stringify({ name, price, description })
+                });
+                if (response.ok) {
+                    showStatus('Product created successfully');
+                    document.getElementById('productName').value = '';
+                    document.getElementById('productPrice').value = '';
+                    document.getElementById('productDesc').value = '';
+                    loadProducts();
+                } else {
+                    showStatus('Error creating product', true);
+                }
+            } catch (error) {
+                showStatus('Error: ' + error.message, true);
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Delete this product?')) return;
+            try {
+                const response = await fetch(`/api/products/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Basic ${auth}` }
+                });
+                if (response.ok) {
+                    showStatus('Product deleted');
+                    loadProducts();
+                } else {
+                    showStatus('Error deleting product', true);
+                }
+            } catch (error) {
+                showStatus('Error: ' + error.message, true);
+            }
+        }
+
+        function editProduct(id, name, price, description) {
+            document.getElementById('editProductId').value = id;
+            document.getElementById('editProductName').value = name;
+            document.getElementById('editProductPrice').value = price;
+            document.getElementById('editProductDesc').value = description;
+            document.getElementById('editProductModal').style.display = 'flex';
+        }
+
+        async function updateProduct() {
+            const id = document.getElementById('editProductId').value;
+            const name = document.getElementById('editProductName').value;
+            const price = parseFloat(document.getElementById('editProductPrice').value);
+            const description = document.getElementById('editProductDesc').value;
+
+            try {
+                const response = await fetch(`/api/products/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Basic ${auth}`
+                    },
+                    body: JSON.stringify({ name, price, description })
+                });
+                if (response.ok) {
+                    showStatus('Product updated successfully');
+                    closeEditProductModal();
+                    loadProducts();
+                } else {
+                    showStatus('Error updating product', true);
+                }
+            } catch (error) {
+                showStatus('Error: ' + error.message, true);
+            }
+        }
+
+        function closeEditProductModal() {
+            document.getElementById('editProductModal').style.display = 'none';
+        }
+
+        loadUsers();
+        loadProducts();
+    </script>
+</body>
+</html>

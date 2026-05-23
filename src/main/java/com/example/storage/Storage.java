@@ -30,7 +30,7 @@ public abstract class Storage<T> {
             } catch (IOException e) {
                 System.out.println("ERROR: " + e.getMessage());
                 System.out.println("Deleting corrupted file: " + filePath);
-                file.delete();  
+                file.delete();
             }
         }
     }
