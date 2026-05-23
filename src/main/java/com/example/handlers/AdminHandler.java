@@ -18,7 +18,6 @@ public class AdminHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         List<User> users = userStorage.findAll();
 
-        // Отладка
         System.out.println("=== AdminHandler ===");
         System.out.println("Users found: " + users.size());
 

@@ -12,12 +12,10 @@ import java.util.UUID;
 public class UserHandler implements HttpHandler {
     private final UserStorage storage;
 
-    // Конструктор без параметров (создаёт новое хранилище)
     public UserHandler() {
         this.storage = new UserStorage();
     }
 
-    // Конструктор с параметром (использует переданное хранилище)
     public UserHandler(UserStorage storage) {
         this.storage = storage;
     }
