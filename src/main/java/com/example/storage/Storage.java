@@ -28,14 +28,22 @@ public abstract class Storage<T> {
                     storage.put(getId(item), item);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("ERROR: " + e.getMessage());
+                System.out.println("Deleting corrupted file: " + filePath);
+                file.delete();  // Удаляем испорченный файл
             }
         }
     }
 
     private void saveToFile() {
         try {
+            // Создаём папку data, если её нет
+            File dir = new File("data");
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
             objectMapper.writeValue(new File(filePath), new ArrayList<>(storage.values()));
+            System.out.println("Saved " + storage.size() + " items to " + filePath);
         } catch (IOException e) {
             e.printStackTrace();
         }
